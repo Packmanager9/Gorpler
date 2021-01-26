@@ -296,7 +296,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
                     }
                 }
             }
-            if(this == gorpler.body){
+            if (this == gorpler.body) {
                 canvas_context.translate(-this.xmom, -this.ymom)
             }
             this.x += this.xmom
@@ -535,27 +535,45 @@ window.addEventListener('DOMContentLoaded', (event) => {
         balance() {
             this.beam = new Line(this.body.x, this.body.y, this.anchor.x, this.anchor.y, "yellow", this.width)
             if (this.beam.hypotenuse() < this.length) {
-                this.body.xmom += (this.body.x - this.anchor.x) / this.length
-                this.body.ymom += (this.body.y - this.anchor.y) / this.length
+                if (this.body != gorpler.body) {
+                    this.body.xmom += (this.body.x - this.anchor.x) / this.length
+                    this.body.ymom += (this.body.y - this.anchor.y) / this.length
+                } else {
+
+                    this.body.xmom += ((this.body.x - this.anchor.x) / this.length) * .25
+                    this.body.ymom += ((this.body.y - this.anchor.y) / this.length) * .25
+                }
                 this.anchor.xmom -= (this.body.x - this.anchor.x) / this.length
                 this.anchor.ymom -= (this.body.y - this.anchor.y) / this.length
             } else {
-                this.body.xmom -= (this.body.x - this.anchor.x) / this.length
-                this.body.ymom -= (this.body.y - this.anchor.y) / this.length
+                if (this.body != gorpler.body) {
+                    this.body.xmom -= ((this.body.x - this.anchor.x) / this.length)
+                    this.body.ymom -= ((this.body.y - this.anchor.y) / this.length)
+                } else {
+                    this.body.xmom -= ((this.body.x - this.anchor.x) / this.length) * .25
+                    this.body.ymom -= ((this.body.y - this.anchor.y) / this.length) * .25
+                }
                 this.anchor.xmom += (this.body.x - this.anchor.x) / this.length
                 this.anchor.ymom += (this.body.y - this.anchor.y) / this.length
             }
             let xmomentumaverage = (this.body.xmom + this.anchor.xmom) / 2
             let ymomentumaverage = (this.body.ymom + this.anchor.ymom) / 2
-            this.body.xmom = ((this.body.xmom*1) + (xmomentumaverage*1)) / 2
-            this.body.ymom = ((this.body.ymom*1) + (ymomentumaverage*1)) / 2
+            if (this.body != gorpler.body) {
+                this.body.xmom = ((this.body.xmom * 1) + (xmomentumaverage * 1)) / 2
+                this.body.ymom = ((this.body.ymom * 1) + (ymomentumaverage * 1)) / 2
+            }
             this.anchor.xmom = (this.anchor.xmom + xmomentumaverage) / 2
             this.anchor.ymom = (this.anchor.ymom + ymomentumaverage) / 2
-            if(gorpler.leglock+gorpler.bodywet+gorpler.armlock >= 1){
+            if (gorpler.leglock + gorpler.bodywet + gorpler.armlock >= 1) {
                 this.body.xmom *= .98
                 this.body.ymom *= .98
                 this.anchor.xmom *= .98
                 this.anchor.ymom *= .98
+            } else {
+                this.body.xmom *= .999
+                this.body.ymom *= .999
+                this.anchor.xmom *= .999
+                this.anchor.ymom *= .999
             }
         }
         draw() {
@@ -921,24 +939,26 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
     setUp(setup_canvas, "black") // setting up canvas refrences, starting timer. 
 
-    class Gorpler{
-        constructor(x,y){
-            this.body = new Circle(x,y, 10, "cyan")
+    class Gorpler {
+        constructor(x, y) {
+            this.body = new Circle(x, y, 10, "cyan")
             this.platforms = []
-            this.arm = new Spring(x,y,3,"yellow",this.body)
+            this.arm = new Spring(x, y, 3, "yellow", this.body)
             this.arms = []
             this.arms.push(this.arm)
-            this.leg = new Spring(x,y,3,"red",this.body)
+            this.leg = new Spring(x, y, 3, "red", this.body)
             this.legs = []
             this.legs.push(this.leg)
             this.leglock = 0
             this.armlock = 0
+            this.pops = []
+            this.dead = 0
             // for(let t = 0;t<16;t++){
             //     let floor = new Rectangle(Math.random()*700, Math.random()*700,5, 100, "white" )
             //     this.platforms.push(floor)
             // }
 
-            let floor = new Rectangle(x-50,y+50, 100, 10, "white")
+            let floor = new Rectangle(x - 50, y + 50, 100, 10, "white")
             this.platforms.push(floor)
             // floor = new Rectangle(40,0, 10, 500, "white")
             // this.platforms.push(floor)
@@ -952,155 +972,259 @@ window.addEventListener('DOMContentLoaded', (event) => {
             // this.platforms.push(floor)
 
 
-            for(let t = 0;t<1600;t++){
-                let floors = new Rectangle(Math.random()*7000, Math.random()*7000,10, 10, "white" )
-                this.platforms.push(floors)
+            let water = 0
+            for (let t = 0; this.platforms.length < 16000; t++) {
+                let floors = new Rectangle(Math.random() * 700, -6300 + Math.random() * 7000, 15, 15, "white")
+                let wet = 0
+                for (let k = 0; k < this.platforms.length; k++) {
+                    let link = new LineOP(floors, this.platforms[k])
+                    if (link.hypotenuse() < 80) {
+                        wet = 1
+                        water++
+                    }
+                }
+                if (wet == 0) {
+                    this.platforms.push(floors)
+                }
+                if (water > 1000) {
+                    break
+                }
             }
 
-            for(let t = 0;t<16;t++){
-                this.leg = new Spring(x+Math.random(),y+Math.random(),3, "red", this.legs[t].anchor)     
-                if(t%2 == 0){
+            for (let t = 0; t < 16; t++) {
+                this.leg = new Spring(x + Math.random(), y + Math.random(), 3, "red", this.legs[t].anchor)
+                if (t % 2 == 0) {
                     this.leg.anchor.color = "blue"
                 }
                 this.legs.push(this.leg)
             }
-            for(let t = 0;t<16;t++){
-                this.arm = new Spring(x+Math.random(),y+Math.random(), 3, "yellow",this.arms[t].anchor)
-                if(t%2 == 0){
+            for (let t = 0; t < 16; t++) {
+                this.arm = new Spring(x + Math.random(), y + Math.random(), 3, "yellow", this.arms[t].anchor)
+                if (t % 2 == 0) {
                     this.arm.anchor.color = "magenta"
                 }
                 this.arms.push(this.arm)
             }
         }
-        draw(){
-            this.arms[16].anchor.radius = 9//7
-            this.legs[16].anchor.radius = 9//7
-            this.body.move()
-            this.body.draw()
-            this.leglock = 0
-            this.armlock = 0
+        pop() {
+            let rotx = Math.random()*Math.PI*2
+            let roty = Math.random()*Math.PI*2
 
+            for (let g = 0; g < 70; g++) {
+                let color = "Orange"
 
-            for(let t = 0;t<this.arms.length;t++){
-                this.arms[t].balance()
-                this.legs[t].balance()
+                const dot1 = new Circle(this.body.x, this.body.y, this.body.radius / 4, color, Math.cos(rotx) * 4, Math.sin(roty) * 4)
+                this.pops.push(dot1)
+                rotx += 2 * Math.PI / Math.random()*Math.PI*2
+                roty += 2 * Math.PI / Math.random()*Math.PI*2
             }
 
-            this.bodywet = 0
-            for(let t =0;t<this.platforms.length;t++){
-                let link = new LineOP(this.body, this.platforms[t])
-                if(link.hypotenuse() < 750){
-                    this.platforms[t].draw()
-                    if(this.platforms[t].doesPerimeterTouch(this.legs[16].anchor)){
-                        if(!gamepadAPI.buttonsStatus.includes('Right-Trigger')){
-                            this.leglock = 1
-                        }else{
-                            this.leglock = 0
-                        }
-                    }
-                    if(this.platforms[t].doesPerimeterTouch(this.arms[16].anchor)){
-                        if(!gamepadAPI.buttonsStatus.includes('Left-Trigger')){
-                            this.armlock = 1
-                        }else{
-                            this.armlock = 0
-                        }
-                    }
-                    if(this.platforms[t].doesPerimeterTouch(this.body)){
-                        this.bodywet = 1
-                    }
+        }
+        popdraw() {
+            for (let t = 0; t < this.pops.length; t++) {
+                if (this.pops[t].radius < .1) {
+                    this.pops.splice(t, 1)
+                }
+            }
+            for (let t = 0; t < this.pops.length; t++) {
+                this.pops[t].radius *= .99
+                this.pops[t].move()
+                this.pops[t].draw()
+            }
+            for (let t = 0; t < this.pops.length; t++) {
+                if (this.pops[t].radius < .1) {
+                    this.pops.splice(t, 1)
+                }
+            }
+        }
+        draw() {
+            if(this.dead < 128){
+                this.arms[this.arms.length-1].anchor.radius = 9//7
+                this.legs[this.arms.length-1].anchor.radius = 9//7
+                if(this.dead == 0){
+                this.body.move()
+                }
+                this.body.draw()
+                this.leglock = 0
+                this.armlock = 0
     
+                this.popdraw()
+    
+                for (let t = 0; t < this.arms.length; t++) {
+    
+                if(this.dead == 0){
+                    this.arms[t].balance()
+                    this.legs[t].balance()
                 }
-            }
-
-
-            if(this.bodywet == 0){
-                this.body.xmom*=.8
-                this.body.ymom*=.8
-                this.body.ymom+=1
+                }
+    
+                this.bodywet = 0
+                for (let t = 0; t < this.platforms.length; t++) {
+                    let link = new LineOP(this.body, this.platforms[t])
+                    if (link.hypotenuse() < 750) {
+                        this.platforms[t].draw()
+                        if (this.platforms[t].doesPerimeterTouch(this.legs[this.arms.length-1].anchor)) {
+                            if (!gamepadAPI.buttonsStatus.includes('Right-Trigger')) {
+                                this.leglock = 1
+                            } else {
+                                this.leglock = 0
+                            }
+                        }
+                        if (this.platforms[t].doesPerimeterTouch(this.arms[this.arms.length-1].anchor)) {
+                            if (!gamepadAPI.buttonsStatus.includes('Left-Trigger')) {
+                                this.armlock = 1
+                            } else {
+                                this.armlock = 0
+                            }
+                        }
+                        if (this.platforms[t].doesPerimeterTouch(this.body)) {
+                            this.bodywet = 1
+                        }
+    
+                    }
+                }
+    
+    
+                if (this.bodywet == 0) {
+                    this.body.xmom *= .8
+                    this.body.ymom *= .8
+                    this.body.ymom += .5
+                } else {
+                    this.body.xmom *= .9
+                    this.body.ymom *= .9
+                    if (this.body.ymom > 0) {
+                        this.body.ymom = 0
+                    }
+                }
+    
+                if (this.leglock != 0) {
+                    this.legs[this.arms.length-1].anchor.xmom *= .00001
+                    this.legs[this.arms.length-1].anchor.ymom *= .00001
+                } else {
+                    this.legs[this.arms.length-1].anchor.xmom *= .99
+                    this.legs[this.arms.length-1].anchor.ymom *= .99
+                    // this.legs[this.arms.length-1].anchor.ymom +=.1
+                    if (this.bodywet != 0 || this.armlock == 1) {
+                        gamepad_controlleg(this.legs[this.arms.length-1].anchor, 2.8)
+                    }
+                }
+                if (this.armlock != 0) {
+                    this.arms[this.arms.length-1].anchor.xmom *= .00001
+                    this.arms[this.arms.length-1].anchor.ymom *= .00001
+                } else {
+                    this.arms[this.arms.length-1].anchor.xmom *= .99
+                    this.arms[this.arms.length-1].anchor.ymom *= .99
+                    // this.arms[this.arms.length-1].anchor.ymom +=.1
+                    if (this.bodywet != 0 || this.leglock == 1) {
+                        gamepad_control(this.arms[this.arms.length-1].anchor, 2.8)
+                    }
+                }
+    
+                for (let t = 0; t < this.arms.length; t++) {
+                    if(this.dead == 0){
+                    this.arms[t].move()
+                    this.legs[t].move()
+                }
+                    this.arms[t].draw()
+                    this.legs[t].draw()
+                }
+    
+                if(this.dead == 0){
+                    canvas_context.font = "12px arial"
+                    canvas_context.fillStyle = "blue"
+                    canvas_context.fillText('R', this.legs[this.arms.length-1].anchor.x - 4, this.legs[this.arms.length-1].anchor.y + 4)
+                    canvas_context.fillStyle = "blue"
+                    canvas_context.fillText('L', this.arms[this.arms.length-1].anchor.x - 4, this.arms[this.arms.length-1].anchor.y + 4)
+                }
+                // if(keysPressed['d']){
+                //     this.arms[this.arms.length-1].anchor.xmom +=1.5
+                // }
+                // if(keysPressed['l']){
+                //     this.legs[this.arms.length-1].anchor.xmom +=1.5
+                // }
+                // if(keysPressed['a']){
+                //     this.arms[this.arms.length-1].anchor.xmom -=1.5
+                // }
+                // if(keysPressed['j']){
+                //     this.legs[this.arms.length-1].anchor.xmom -=1.5
+                // }
+                // if(keysPressed['s']){
+                //     this.arms[this.arms.length-1].anchor.ymom +=1.5
+                // }
+                // if(keysPressed['k']){
+                //     this.legs[this.arms.length-1].anchor.ymom +=1.5
+                // }
+                // if(keysPressed['w']){
+                //     this.arms[this.arms.length-1].anchor.ymom -=1.5
+                // }
+                // if(keysPressed['i']){
+                //     this.legs[this.arms.length-1].anchor.ymom -=1.5
+                // }
+    
+    
             }else{
-                this.body.xmom*=.9
-                this.body.ymom*=.9
-                if(this.body.ymom > 0){
-                    this.body.ymom = 0
+
+                canvas_context.font = "40px arial"
+                canvas_context.fillStyle = "white"
+                canvas_context.fillText('Roasted', this.legs[this.arms.length-1].anchor.x - 4, this.legs[this.arms.length-1].anchor.y + 4)
+                for (let t = 0; t < this.platforms.length; t++) {
+                    let link = new LineOP(this.body, this.platforms[t])
+                    if (link.hypotenuse() < 750) {
+                        this.platforms[t].draw()
+                    }
                 }
             }
-
-            if(this.leglock != 0){
-                this.legs[16].anchor.xmom *=.00001
-                this.legs[16].anchor.ymom *=.00001
-            }else{
-                this.legs[16].anchor.xmom *=.99
-                this.legs[16].anchor.ymom *=.99
-                // this.legs[16].anchor.ymom +=.1
-                if(this.bodywet != 0 || this.armlock == 1){
-                    gamepad_controlleg(this.legs[16].anchor,2.8)
+        }
+        death() {
+            this.armlock = 0
+            this.leglock = 0
+            if (this.dead < 128) {
+                if(this.dead%8 == 0){
+                    this.pop()
+                    this.arms.splice(this.arms.length-1)
+                    this.legs.splice(this.legs.length-1)
+                    if(this.legs.length === 0){
+                        this.body.radius = 0
+                    }
                 }
+                this.dead++
             }
-            if(this.armlock != 0){
-                this.arms[16].anchor.xmom *=.00001
-                this.arms[16].anchor.ymom *=.00001
-            }else{
-                this.arms[16].anchor.xmom *=.99
-                this.arms[16].anchor.ymom *=.99
-                // this.arms[16].anchor.ymom +=.1
-                if(this.bodywet != 0 || this.leglock == 1){
-                gamepad_control(this.arms[16].anchor,2.8)
-                }
-            }
-
-            for(let t = 0;t<this.arms.length;t++){
-                this.arms[t].move()
-                this.legs[t].move()
-                this.arms[t].draw()
-                this.legs[t].draw()
-            }
-
-            canvas_context.font = "12px arial"
-            canvas_context.fillStyle = "blue"
-            canvas_context.fillText('R', this.legs[16].anchor.x-4, this.legs[16].anchor.y+4)
-            canvas_context.fillStyle = "blue"
-            canvas_context.fillText('L', this.arms[16].anchor.x-4, this.arms[16].anchor.y+4)
-            // if(keysPressed['d']){
-            //     this.arms[16].anchor.xmom +=1.5
-            // }
-            // if(keysPressed['l']){
-            //     this.legs[16].anchor.xmom +=1.5
-            // }
-            // if(keysPressed['a']){
-            //     this.arms[16].anchor.xmom -=1.5
-            // }
-            // if(keysPressed['j']){
-            //     this.legs[16].anchor.xmom -=1.5
-            // }
-            // if(keysPressed['s']){
-            //     this.arms[16].anchor.ymom +=1.5
-            // }
-            // if(keysPressed['k']){
-            //     this.legs[16].anchor.ymom +=1.5
-            // }
-            // if(keysPressed['w']){
-            //     this.arms[16].anchor.ymom -=1.5
-            // }
-            // if(keysPressed['i']){
-            //     this.legs[16].anchor.ymom -=1.5
-            // }
-
-
         }
 
     }
 
     canvas_context.fillStyle = "white"
 
-    let splat = 0 
-    let gorpler = new Gorpler(350,350)
+    let splat = 0
+    let gorpler = new Gorpler(350, 350)
+    let lava = new Rectangle(-10000, 710, 20000, 7200, "#FFF90095")
+    let lava2 = new Rectangle(-10000, 720, 20000, 7200, "#FF110095")
 
     function main() {
-        canvas_context.clearRect(-10000, -10000, canvas.width*100, canvas.height*100)  // refreshes the image
+        canvas_context.clearRect(-10000, -10000, canvas.width * 100, canvas.height * 100)  // refreshes the image
         canvas_context.fillStyle = "white"
         gamepadAPI.update()
         gorpler.draw()
+        lava.y -= .5
+        lava.draw()
+        lava2.y -= .5
+        lava2.draw()
+        for (let t = 0; t < gorpler.platforms.length; t++) {
+            if (lava2.isPointInside(gorpler.platforms[t])) {
+                gorpler.platforms[t].y -= 7000
+            }
+        }
+        if (lava2.isPointInside(gorpler.arms[gorpler.arms.length-1].anchor)) {
+            gorpler.death()
+        }
+        if (lava2.isPointInside(gorpler.legs[gorpler.arms.length-1].anchor)) {
+            gorpler.death()
+        }
+        if (lava2.isPointInside(gorpler.body)) {
+            gorpler.death()
+        }
     }
+
 
 
     // canvas_context.drawImage(canvas, -2 * Math.cos(counter), -2 * Math.sin(counter))
