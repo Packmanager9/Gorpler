@@ -996,6 +996,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
 
             if(this.bodywet == 0){
+                this.body.xmom*=.8
+                this.body.ymom*=.8
                 this.body.ymom+=.2
             }else{
                 this.body.xmom*=.9
@@ -1013,7 +1015,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 this.legs[20].anchor.ymom *=.99
                 // this.legs[20].anchor.ymom +=.1
                 if(this.bodywet != 0 || this.armlock == 1){
-                    gamepad_controlleg(this.legs[20].anchor,1.8)
+                    gamepad_controlleg(this.legs[20].anchor,2.8)
                 }
             }
             if(this.armlock != 0){
@@ -1024,7 +1026,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 this.arms[20].anchor.ymom *=.99
                 // this.arms[20].anchor.ymom +=.1
                 if(this.bodywet != 0 || this.leglock == 1){
-                gamepad_control(this.arms[20].anchor,1.8)
+                gamepad_control(this.arms[20].anchor,2.8)
                 }
             }
 
