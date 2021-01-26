@@ -296,6 +296,9 @@ window.addEventListener('DOMContentLoaded', (event) => {
                     }
                 }
             }
+            if(this == gorpler.body){
+                canvas_context.translate(-this.xmom, -this.ymom)
+            }
             this.x += this.xmom
             this.y += this.ymom
         }
@@ -514,7 +517,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
         }
     }
     class Spring {
-        constructor(x, y, radius, color, body = 0, length = .8, gravity = 0, width = 1) {
+        constructor(x, y, radius, color, body = 0, length = .8, gravity = 0, width = 5) {
             if (body == 0) {
                 this.body = new Circle(x, y, radius, color)
                 this.anchor = new Circle(x, y, radius, color)
@@ -548,6 +551,12 @@ window.addEventListener('DOMContentLoaded', (event) => {
             this.body.ymom = ((this.body.ymom*1) + (ymomentumaverage*1)) / 2
             this.anchor.xmom = (this.anchor.xmom + xmomentumaverage) / 2
             this.anchor.ymom = (this.anchor.ymom + ymomentumaverage) / 2
+            if(gorpler.leglock+gorpler.bodywet+gorpler.armlock >= 1){
+                this.body.xmom *= .98
+                this.body.ymom *= .98
+                this.anchor.xmom *= .98
+                this.anchor.ymom *= .98
+            }
         }
         draw() {
             this.beam = new Line(this.body.x, this.body.y, this.anchor.x, this.anchor.y, "yellow", this.width)
@@ -916,10 +925,10 @@ window.addEventListener('DOMContentLoaded', (event) => {
         constructor(x,y){
             this.body = new Circle(x,y, 10, "cyan")
             this.platforms = []
-            this.arm = new Spring(x,y,3,"red",this.body)
+            this.arm = new Spring(x,y,3,"yellow",this.body)
             this.arms = []
             this.arms.push(this.arm)
-            this.leg = new Spring(x,y,3,"yellow",this.body)
+            this.leg = new Spring(x,y,3,"red",this.body)
             this.legs = []
             this.legs.push(this.leg)
             this.leglock = 0
@@ -929,37 +938,43 @@ window.addEventListener('DOMContentLoaded', (event) => {
             //     this.platforms.push(floor)
             // }
 
-            let floor = new Rectangle(0,690, 900, 10, "white")
+            let floor = new Rectangle(x-50,y+50, 100, 10, "white")
             this.platforms.push(floor)
-            floor = new Rectangle(40,0, 10, 500, "white")
-            this.platforms.push(floor)
-            floor = new Rectangle(170,200, 120, 10, "white")
-            this.platforms.push(floor)
-            floor = new Rectangle(300,300, 120, 10, "white")
-            this.platforms.push(floor)
-            floor = new Rectangle(400,400, 120, 10, "white")
-            this.platforms.push(floor)
-            floor = new Rectangle(120,600, 120, 10, "white")
-            this.platforms.push(floor)
+            // floor = new Rectangle(40,0, 10, 500, "white")
+            // this.platforms.push(floor)
+            // floor = new Rectangle(170,200, 120, 10, "white")
+            // this.platforms.push(floor)
+            // floor = new Rectangle(300,300, 120, 10, "white")
+            // this.platforms.push(floor)
+            // floor = new Rectangle(400,400, 120, 10, "white")
+            // this.platforms.push(floor)
+            // floor = new Rectangle(120,600, 120, 10, "white")
+            // this.platforms.push(floor)
 
 
-            for(let t = 0;t<20;t++){
-                let floors = new Rectangle(Math.random()*700, Math.random()*700,10, 10, "white" )
+            for(let t = 0;t<2000;t++){
+                let floors = new Rectangle(Math.random()*7000, Math.random()*7000,10, 10, "white" )
                 this.platforms.push(floors)
             }
 
             for(let t = 0;t<20;t++){
-                this.leg = new Spring(x+Math.random(),y+Math.random(),3, "red", this.legs[t].anchor)
+                this.leg = new Spring(x+Math.random(),y+Math.random(),3, "red", this.legs[t].anchor)     
+                if(t%2 == 0){
+                    this.leg.anchor.color = "blue"
+                }
                 this.legs.push(this.leg)
             }
             for(let t = 0;t<20;t++){
                 this.arm = new Spring(x+Math.random(),y+Math.random(), 3, "yellow",this.arms[t].anchor)
+                if(t%2 == 0){
+                    this.arm.anchor.color = "magenta"
+                }
                 this.arms.push(this.arm)
             }
         }
         draw(){
-            this.arms[20].anchor.radius = 7
-            this.legs[20].anchor.radius = 7
+            this.arms[20].anchor.radius = 9//7
+            this.legs[20].anchor.radius = 9//7
             this.body.move()
             this.body.draw()
             this.leglock = 0
@@ -973,32 +988,35 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
             this.bodywet = 0
             for(let t =0;t<this.platforms.length;t++){
-                this.platforms[t].draw()
-                if(this.platforms[t].doesPerimeterTouch(this.legs[20].anchor)){
-                    if(!gamepadAPI.buttonsStatus.includes('Right-Trigger')){
-                        this.leglock = 1
-                    }else{
-                        this.leglock = 0
+                let link = new LineOP(this.body, this.platforms[t])
+                if(link.hypotenuse() < 750){
+                    this.platforms[t].draw()
+                    if(this.platforms[t].doesPerimeterTouch(this.legs[20].anchor)){
+                        if(!gamepadAPI.buttonsStatus.includes('Right-Trigger')){
+                            this.leglock = 1
+                        }else{
+                            this.leglock = 0
+                        }
                     }
-                }
-                if(this.platforms[t].doesPerimeterTouch(this.arms[20].anchor)){
-                    if(!gamepadAPI.buttonsStatus.includes('Left-Trigger')){
-                        this.armlock = 1
-                    }else{
-                        this.armlock = 0
+                    if(this.platforms[t].doesPerimeterTouch(this.arms[20].anchor)){
+                        if(!gamepadAPI.buttonsStatus.includes('Left-Trigger')){
+                            this.armlock = 1
+                        }else{
+                            this.armlock = 0
+                        }
                     }
+                    if(this.platforms[t].doesPerimeterTouch(this.body)){
+                        this.bodywet = 1
+                    }
+    
                 }
-                if(this.platforms[t].doesPerimeterTouch(this.body)){
-                    this.bodywet = 1
-                }
-
             }
 
 
             if(this.bodywet == 0){
                 this.body.xmom*=.8
                 this.body.ymom*=.8
-                this.body.ymom+=.2
+                this.body.ymom+=1
             }else{
                 this.body.xmom*=.9
                 this.body.ymom*=.9
@@ -1036,6 +1054,12 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 this.arms[t].draw()
                 this.legs[t].draw()
             }
+
+            canvas_context.font = "12px arial"
+            canvas_context.fillStyle = "blue"
+            canvas_context.fillText('R', this.legs[20].anchor.x-4, this.legs[20].anchor.y+4)
+            canvas_context.fillStyle = "blue"
+            canvas_context.fillText('L', this.arms[20].anchor.x-4, this.arms[20].anchor.y+4)
             // if(keysPressed['d']){
             //     this.arms[20].anchor.xmom +=1.5
             // }
@@ -1072,7 +1096,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
     let gorpler = new Gorpler(350,350)
 
     function main() {
-        canvas_context.clearRect(0, 0, canvas.width, canvas.height)  // refreshes the image
+        canvas_context.clearRect(-10000, -10000, canvas.width*100, canvas.height*100)  // refreshes the image
         canvas_context.fillStyle = "white"
         gamepadAPI.update()
         gorpler.draw()
