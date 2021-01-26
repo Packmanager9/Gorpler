@@ -517,7 +517,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
         }
     }
     class Spring {
-        constructor(x, y, radius, color, body = 0, length = .8, gravity = 0, width = 5) {
+        constructor(x, y, radius, color, body = 0, length = 1, gravity = 0, width = 5) {
             if (body == 0) {
                 this.body = new Circle(x, y, radius, color)
                 this.anchor = new Circle(x, y, radius, color)
@@ -933,7 +933,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
             this.legs.push(this.leg)
             this.leglock = 0
             this.armlock = 0
-            // for(let t = 0;t<20;t++){
+            // for(let t = 0;t<16;t++){
             //     let floor = new Rectangle(Math.random()*700, Math.random()*700,5, 100, "white" )
             //     this.platforms.push(floor)
             // }
@@ -942,29 +942,29 @@ window.addEventListener('DOMContentLoaded', (event) => {
             this.platforms.push(floor)
             // floor = new Rectangle(40,0, 10, 500, "white")
             // this.platforms.push(floor)
-            // floor = new Rectangle(170,200, 120, 10, "white")
+            // floor = new Rectangle(170,160, 116, 10, "white")
             // this.platforms.push(floor)
-            // floor = new Rectangle(300,300, 120, 10, "white")
+            // floor = new Rectangle(300,300, 116, 10, "white")
             // this.platforms.push(floor)
-            // floor = new Rectangle(400,400, 120, 10, "white")
+            // floor = new Rectangle(400,400, 116, 10, "white")
             // this.platforms.push(floor)
-            // floor = new Rectangle(120,600, 120, 10, "white")
+            // floor = new Rectangle(116,600, 116, 10, "white")
             // this.platforms.push(floor)
 
 
-            for(let t = 0;t<2000;t++){
+            for(let t = 0;t<1600;t++){
                 let floors = new Rectangle(Math.random()*7000, Math.random()*7000,10, 10, "white" )
                 this.platforms.push(floors)
             }
 
-            for(let t = 0;t<20;t++){
+            for(let t = 0;t<16;t++){
                 this.leg = new Spring(x+Math.random(),y+Math.random(),3, "red", this.legs[t].anchor)     
                 if(t%2 == 0){
                     this.leg.anchor.color = "blue"
                 }
                 this.legs.push(this.leg)
             }
-            for(let t = 0;t<20;t++){
+            for(let t = 0;t<16;t++){
                 this.arm = new Spring(x+Math.random(),y+Math.random(), 3, "yellow",this.arms[t].anchor)
                 if(t%2 == 0){
                     this.arm.anchor.color = "magenta"
@@ -973,8 +973,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
             }
         }
         draw(){
-            this.arms[20].anchor.radius = 9//7
-            this.legs[20].anchor.radius = 9//7
+            this.arms[16].anchor.radius = 9//7
+            this.legs[16].anchor.radius = 9//7
             this.body.move()
             this.body.draw()
             this.leglock = 0
@@ -991,14 +991,14 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 let link = new LineOP(this.body, this.platforms[t])
                 if(link.hypotenuse() < 750){
                     this.platforms[t].draw()
-                    if(this.platforms[t].doesPerimeterTouch(this.legs[20].anchor)){
+                    if(this.platforms[t].doesPerimeterTouch(this.legs[16].anchor)){
                         if(!gamepadAPI.buttonsStatus.includes('Right-Trigger')){
                             this.leglock = 1
                         }else{
                             this.leglock = 0
                         }
                     }
-                    if(this.platforms[t].doesPerimeterTouch(this.arms[20].anchor)){
+                    if(this.platforms[t].doesPerimeterTouch(this.arms[16].anchor)){
                         if(!gamepadAPI.buttonsStatus.includes('Left-Trigger')){
                             this.armlock = 1
                         }else{
@@ -1026,25 +1026,25 @@ window.addEventListener('DOMContentLoaded', (event) => {
             }
 
             if(this.leglock != 0){
-                this.legs[20].anchor.xmom *=.00001
-                this.legs[20].anchor.ymom *=.00001
+                this.legs[16].anchor.xmom *=.00001
+                this.legs[16].anchor.ymom *=.00001
             }else{
-                this.legs[20].anchor.xmom *=.99
-                this.legs[20].anchor.ymom *=.99
-                // this.legs[20].anchor.ymom +=.1
+                this.legs[16].anchor.xmom *=.99
+                this.legs[16].anchor.ymom *=.99
+                // this.legs[16].anchor.ymom +=.1
                 if(this.bodywet != 0 || this.armlock == 1){
-                    gamepad_controlleg(this.legs[20].anchor,2.8)
+                    gamepad_controlleg(this.legs[16].anchor,2.8)
                 }
             }
             if(this.armlock != 0){
-                this.arms[20].anchor.xmom *=.00001
-                this.arms[20].anchor.ymom *=.00001
+                this.arms[16].anchor.xmom *=.00001
+                this.arms[16].anchor.ymom *=.00001
             }else{
-                this.arms[20].anchor.xmom *=.99
-                this.arms[20].anchor.ymom *=.99
-                // this.arms[20].anchor.ymom +=.1
+                this.arms[16].anchor.xmom *=.99
+                this.arms[16].anchor.ymom *=.99
+                // this.arms[16].anchor.ymom +=.1
                 if(this.bodywet != 0 || this.leglock == 1){
-                gamepad_control(this.arms[20].anchor,2.8)
+                gamepad_control(this.arms[16].anchor,2.8)
                 }
             }
 
@@ -1057,32 +1057,32 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
             canvas_context.font = "12px arial"
             canvas_context.fillStyle = "blue"
-            canvas_context.fillText('R', this.legs[20].anchor.x-4, this.legs[20].anchor.y+4)
+            canvas_context.fillText('R', this.legs[16].anchor.x-4, this.legs[16].anchor.y+4)
             canvas_context.fillStyle = "blue"
-            canvas_context.fillText('L', this.arms[20].anchor.x-4, this.arms[20].anchor.y+4)
+            canvas_context.fillText('L', this.arms[16].anchor.x-4, this.arms[16].anchor.y+4)
             // if(keysPressed['d']){
-            //     this.arms[20].anchor.xmom +=1.5
+            //     this.arms[16].anchor.xmom +=1.5
             // }
             // if(keysPressed['l']){
-            //     this.legs[20].anchor.xmom +=1.5
+            //     this.legs[16].anchor.xmom +=1.5
             // }
             // if(keysPressed['a']){
-            //     this.arms[20].anchor.xmom -=1.5
+            //     this.arms[16].anchor.xmom -=1.5
             // }
             // if(keysPressed['j']){
-            //     this.legs[20].anchor.xmom -=1.5
+            //     this.legs[16].anchor.xmom -=1.5
             // }
             // if(keysPressed['s']){
-            //     this.arms[20].anchor.ymom +=1.5
+            //     this.arms[16].anchor.ymom +=1.5
             // }
             // if(keysPressed['k']){
-            //     this.legs[20].anchor.ymom +=1.5
+            //     this.legs[16].anchor.ymom +=1.5
             // }
             // if(keysPressed['w']){
-            //     this.arms[20].anchor.ymom -=1.5
+            //     this.arms[16].anchor.ymom -=1.5
             // }
             // if(keysPressed['i']){
-            //     this.legs[20].anchor.ymom -=1.5
+            //     this.legs[16].anchor.ymom -=1.5
             // }
 
 
